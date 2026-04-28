@@ -610,16 +610,16 @@ module RequestHelpers
   end
 
   def stub_400_wiki_reference_counter_response
-    stub_request(:post, 'https://reference-counter.toolforge.org/api/v1/references/wikimedia/incubator')
+    stub_request(:post, 'https://reference-counter.toolforge.org/api/v1/references/wikipedia/en')
       .to_return(
         status: 400,
-        body: { 'description' => 'Language incubator is not a valid language. ' }.to_json,
+        body: { 'description' => 'Bad request.' }.to_json,
         headers: { 'Content-Type' => 'application/json' }
       )
   end
 
   def stub_403_wiki_reference_counter_response
-    stub_request(:post, 'https://reference-counter.toolforge.org/api/v1/references/wikimedia/incubator')
+    stub_request(:post, 'https://reference-counter.toolforge.org/api/v1/references/wikipedia/en')
       .to_return(
         status: 403,
         body: { 'description' => "mwapi error: permissiondenied - You don't have permission to view\
@@ -629,7 +629,7 @@ module RequestHelpers
   end
 
   def stub_404_wiki_reference_counter_response
-    stub_request(:post, 'https://reference-counter.toolforge.org/api/v1/references/wikimedia/incubator')
+    stub_request(:post, 'https://reference-counter.toolforge.org/api/v1/references/wikipedia/en')
       .to_return(
         status: 404,
         body: { 'description' => 'rest-nonexistent-revision -\

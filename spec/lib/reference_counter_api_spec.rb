@@ -8,14 +8,20 @@ describe ReferenceCounterApi do
 
   let(:en_wikipedia) { Wiki.get_or_create(language: 'en', project: 'wikipedia') }
   let(:es_wiktionary) { Wiki.get_or_create(language: 'es', project: 'wiktionary') }
-  let(:not_supported) { Wiki.get_or_create(language: 'incubator', project: 'wikimedia') }
+  let(:commons) { Wiki.get_or_create(language: 'commons', project: 'wikimedia') }
   let(:wikidata) { Wiki.get_or_create(language: nil, project: 'wikidata') }
   let(:deleted_rev_ids) { [708326238] }
   let(:rev_ids) { [5006940, 5006942, 5006946] }
 
-  it 'raises InvalidProjectError if using wikidata project' do
+  it 'raises InvalidProjectError for wikidata' do
     expect do
       described_class.new(wikidata)
+    end.to raise_error(described_class::InvalidProjectError)
+  end
+
+  it 'raises InvalidProjectError for wikimedia projects (commons, meta, etc.)' do
+    expect do
+      described_class.new(commons)
     end.to raise_error(described_class::InvalidProjectError)
   end
 
@@ -45,7 +51,7 @@ describe ReferenceCounterApi do
 
     it 'if response is 400 bad request' do
       stub_400_wiki_reference_counter_response
-      ref_counter_api = described_class.new(not_supported)
+      ref_counter_api = described_class.new(en_wikipedia)
       response = ref_counter_api.get_number_of_references_from_revision_ids rev_ids
       expect(response.dig('5006940', 'num_ref')).to be_nil
       expect(response.dig('5006940').key?('error')).to eq(false)
@@ -57,7 +63,7 @@ describe ReferenceCounterApi do
 
     it 'if response is 403 forbidden' do
       stub_403_wiki_reference_counter_response
-      ref_counter_api = described_class.new(not_supported)
+      ref_counter_api = described_class.new(en_wikipedia)
       response = ref_counter_api.get_number_of_references_from_revision_ids rev_ids
       expect(response.dig('5006940', 'num_ref')).to be_nil
       expect(response.dig('5006940').key?('error')).to eq(false)
@@ -69,7 +75,7 @@ describe ReferenceCounterApi do
 
     it 'if response is 404 not found' do
       stub_404_wiki_reference_counter_response
-      ref_counter_api = described_class.new(not_supported)
+      ref_counter_api = described_class.new(en_wikipedia)
       response = ref_counter_api.get_number_of_references_from_revision_ids rev_ids
       expect(response.dig('5006940', 'num_ref')).to be_nil
       expect(response.dig('5006940').key?('error')).to eq(false)
