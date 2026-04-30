@@ -2358,5 +2358,8 @@ ga:
   question_groups:
     edit_question_group: Cuir Grúpa Ceisteanna in Eagar
   form_search:
+    search: Cuardaigh
+    advanced_search: Cuardach Casta
+    clear: Glan
     program_date: Dáta an Chláir
 ...
