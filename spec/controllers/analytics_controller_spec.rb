@@ -40,11 +40,27 @@ describe AnalyticsController, type: :request do
       expect(response.status).to eq(401)
     end
 
-    it 'return campaign intersection statistics' do
+    it 'returns campaign intersection statistics for admins' do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(admin)
       post '/analytics', params: { campaign_intersection: true,
                                 campaign_1: { id: 1 },
                                 campaign_2: { id: 2 } }
       expect(response.status).to eq(200)
+    end
+
+    it 'blocks anonymous users from campaign intersection' do
+      post '/analytics', params: { campaign_intersection: true,
+                                campaign_1: { id: 1 },
+                                campaign_2: { id: 2 } }
+      expect(response.status).to eq(401)
+    end
+
+    it 'blocks signed-in non-admins from campaign intersection' do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+      post '/analytics', params: { campaign_intersection: true,
+                                campaign_1: { id: 1 },
+                                campaign_2: { id: 2 } }
+      expect(response.status).to eq(401)
     end
 
     it 'returns a structural completeness density plot' do

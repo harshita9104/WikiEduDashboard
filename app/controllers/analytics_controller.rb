@@ -23,6 +23,7 @@ class AnalyticsController < ApplicationController
       require_admin_permissions
       monthly_report
     elsif params[:campaign_intersection]
+      require_admin_permissions
       campaign_intersection
     end
     render 'index'
