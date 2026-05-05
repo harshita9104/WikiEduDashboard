@@ -1,8 +1,9 @@
 ---
 name: 'About Wikimedia Commons '
 id: 81
-description: |-
+description: |
   This module will provide an overview of Wikimedia Commons, answering questions including:
+
   * What exactly is Wikimedia Commons?
   * How do contributors typically engage with Commons?
   * Under which licenses will I upload my files to Commons?
