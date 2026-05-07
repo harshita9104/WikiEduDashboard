@@ -581,7 +581,14 @@ module RequestHelpers
         body: lambda do |request|
           rev_ids = JSON.parse(request.body).fetch('rev_ids', [])
           rev_ids.to_h do |rev_id|
-            [rev_id.to_s, { 'num_ref' => num_refs[rev_id.to_s] }]
+            num_ref = num_refs[rev_id.to_s]
+            # nil signals a deleted/suppressed revision; real API returns 'error' => 'no content'
+            entry = if num_ref.nil?
+                      { 'num_ref' => nil, 'error' => 'no content' }
+                    else
+                      { 'num_ref' => num_ref }
+                    end
+            [rev_id.to_s, entry]
           end.to_json
         end,
         headers: { 'Content-Type' => 'application/json' }
@@ -591,7 +598,7 @@ module RequestHelpers
   def stub_es_wiktionary_reference_counter_response
     stub_reference_counter_batch_response(
       project: 'wiktionary', language: 'es',
-      num_refs: { '5006940' => 10, '5006942' => 4, '5006946' => 2 }
+      num_refs: { '5006940' => 10, '5006942' => 4, '5006946' => 2, '6115106' => nil }
     )
   end
 

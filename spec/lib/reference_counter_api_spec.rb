@@ -10,7 +10,7 @@ describe ReferenceCounterApi do
   let(:es_wiktionary) { Wiki.get_or_create(language: 'es', project: 'wiktionary') }
   let(:commons) { Wiki.get_or_create(language: 'commons', project: 'wikimedia') }
   let(:wikidata) { Wiki.get_or_create(language: nil, project: 'wikidata') }
-  let(:deleted_rev_ids) { [708326238] }
+  let(:deleted_rev_id) { [6115106] }
   let(:rev_ids) { [5006940, 5006942, 5006946] }
 
   it 'raises InvalidProjectError for wikidata' do
@@ -25,22 +25,33 @@ describe ReferenceCounterApi do
     end.to raise_error(described_class::InvalidProjectError)
   end
 
-  context 'returns the number of references' do
+  context 'when the API returns 200 responses' do
     before do
       stub_wiki_validation
       stub_es_wiktionary_reference_counter_response
     end
 
-    # Get revision data for valid rev ids for Wikidata
-    it 'if response is 200 OK', vcr: true do
+    it 'returns the number of references' do
       ref_counter_api = described_class.new(es_wiktionary)
-      response = ref_counter_api.get_number_of_references_from_revision_ids rev_ids
+      response = ref_counter_api.get_number_of_references_from_revision_ids rev_ids + deleted_rev_id
       expect(response.dig('5006940', 'num_ref')).to eq(10)
       expect(response.dig('5006940').key?('error')).to eq(false)
       expect(response.dig('5006942', 'num_ref')).to eq(4)
       expect(response.dig('5006942').key?('error')).to eq(false)
       expect(response.dig('5006946', 'num_ref')).to eq(2)
       expect(response.dig('5006946').key?('error')).to eq(false)
+      expect(response.dig('6115106', 'num_ref')).to be_nil
+      expect(response.dig('6115106').key?('error')).to eq(false)
+    end
+
+    it 'records suppressed-content revs on the update service and does not send them to Sentry' do
+      update_service = instance_double('UpdateService', record_reference_counter_403: true)
+      ref_counter_api = described_class.new(es_wiktionary, update_service)
+
+      expect(update_service).to receive(:record_reference_counter_403).once
+      expect(Sentry).not_to receive(:capture_exception)
+
+      ref_counter_api.get_number_of_references_from_revision_ids(rev_ids + deleted_rev_id)
     end
   end
 
@@ -86,7 +97,7 @@ describe ReferenceCounterApi do
     end
   end
 
-  it 'logs the error once if an unexpected error raises several times', vcr: true do
+  it 'logs the error once if an unexpected error raises several times' do
     reference_counter_api = described_class.new(es_wiktionary)
 
     stub_request(:any, /.*reference-counter.toolforge.org*/)
@@ -125,26 +136,6 @@ describe ReferenceCounterApi do
     end
 
     let(:subject) { described_class.new(en_wikipedia, update_service) }
-
-    it 'records suppressed-content revs on the update service and does not send them to Sentry' do
-      stub_request(:post, 'https://reference-counter.toolforge.org/api/v1/references/wikipedia/en')
-        .to_return(
-          status: 200,
-          body: lambda do |request|
-            rev_ids = JSON.parse(request.body).fetch('rev_ids', [])
-            rev_ids.to_h { |id| [id.to_s, { 'num_ref' => nil, 'error' => 'no content' }] }.to_json
-          end,
-          headers: { 'Content-Type': 'application/json' }
-        )
-
-      expect(update_service).to receive(:record_reference_counter_403)
-        .exactly(failing_ids.size).times
-      expect(Sentry).not_to receive(:capture_exception)
-
-      results = subject.get_number_of_references_from_revision_ids(failing_ids)
-      expect(results.length).to eq(failing_ids.size)
-      expect(results.values.all? { |v| v['num_ref'].nil? }).to be true
-    end
 
     it 'sends separate Sentry logs for each unique non-403 status code' do
       subject.send(:batch_non_200_response_log, 404, { rev_id: 987654321, content: {} })
