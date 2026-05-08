@@ -40,8 +40,10 @@ describe ReferenceCounterApi do
       expect(response.dig('5006942').key?('error')).to eq(false)
       expect(response.dig('5006946', 'num_ref')).to eq(2)
       expect(response.dig('5006946').key?('error')).to eq(false)
+      # Indicates if a revision was deleted
       expect(response.dig('6115106', 'num_ref')).to be_nil
       expect(response.dig('6115106').key?('error')).to eq(false)
+      expect(response.dig('6115106', 'deleted')).to eq(true)
     end
 
     it 'records suppressed-content revs on the update service and does not send them to Sentry' do

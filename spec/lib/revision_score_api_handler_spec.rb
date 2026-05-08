@@ -37,6 +37,25 @@ describe RevisionScoreApiHandler do
     end
   end
 
+  context 'when a revision is suppressed or deleted' do
+    before do
+      stub_wiki_validation
+      stub_reference_counter_batch_response(
+        project: 'wikipedia', language: 'en',
+        num_refs: { '829840092' => nil }
+      )
+    end
+
+    let(:handler) { described_class.new(wiki: Wiki.find(1)) }
+
+    it 'returns deleted: true and empty features' do
+      result = handler.get_revision_data [829840092]
+      expect(result.dig('829840092')).to eq({ 'wp10' => nil, 'error' => false,
+                                              'features' => {}, 'deleted' => true,
+                                              'prediction' => nil })
+    end
+  end
+
   context 'when the wiki is wikidata' do
     before { stub_wiki_validation }
 

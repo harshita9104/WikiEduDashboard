@@ -84,10 +84,14 @@ class ReferenceCounterApi
     end
   end
 
-  # Per-rev entry shape from the batch endpoint:
+  # Per-rev entry shape from the batch endpoint (input):
   #   { 'num_ref' => N }                                  # normal
   #   { 'num_ref' => nil, 'error' => 'no content' }       # suppressed/deleted
   #   nil                                                 # missing from response
+  # Transformed output:
+  #   { 'num_ref' => N }                                  # normal
+  #   { 'num_ref' => nil, 'deleted' => true }             # suppressed/deleted
+  #   { 'num_ref' => nil }                                # missing from response
   def transform_entry(entry)
     return { 'num_ref' => nil } if entry.nil?
     return handle_forbidden if suppressed_content?(entry)
@@ -103,7 +107,7 @@ class ReferenceCounterApi
   # surface a total per course update, and skip Sentry reporting.
   def handle_forbidden
     @update_service&.record_reference_counter_403
-    { 'num_ref' => nil }
+    { 'num_ref' => nil, 'deleted' => true }
   end
 
   def error_key(status)
