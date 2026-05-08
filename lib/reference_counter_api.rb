@@ -74,13 +74,7 @@ class ReferenceCounterApi
     return normalize_batch_results(rev_ids, parsed_response) if status == 200
 
     batch_non_200_response_log(status, { rev_ids:, content: parsed_response })
-
-    default = if non_transient_error?(status)
-                { 'num_ref' => nil }
-              else
-                { 'num_ref' => nil, 'error' => parsed_response }
-              end
-    rev_ids.to_h { |id| [id.to_s, default] }
+    rev_ids.to_h { |id| [id.to_s, { 'num_ref' => nil, 'error' => parsed_response }] }
   end
 
   def normalize_batch_results(rev_ids, parsed_response)
@@ -177,16 +171,6 @@ class ReferenceCounterApi
       },
       request: { open_timeout: OPEN_TIMEOUT, timeout: REQUEST_TIMEOUT }
     )
-  end
-
-  BAD_REQUEST = 400
-  FORBIDDEN = 403
-  NOT_FOUND = 404
-  # A bad request response indicates that the language and/or project is not supported.
-  # A forbidden response likely means we lack permission to access the revision,
-  # possibly because it was deleted or hidden.
-  def non_transient_error?(status)
-    [BAD_REQUEST, FORBIDDEN, NOT_FOUND].include? status
   end
 
   TYPICAL_ERRORS = [Faraday::TimeoutError,
