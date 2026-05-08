@@ -64,7 +64,7 @@ const Assignment = (props) => {
           {isWikipedia && <div className={ratingClass}><p>{article.pretty_rating || '-'}</p></div>}
           {isWikipedia && <div className="tooltip dark">
             <p>{I18n.t(`articles.rating_docs.${article.rating || '?'}`, { class: article.rating || '' })}</p>
-            {/* eslint-disable-next-line */}
+            { }
           </div>}
         </td>
         <td>
