@@ -4,6 +4,7 @@
 # Author: Alex00728
 # Author: Apzp79
 # Author: Asdfqwer51
+# Author: Bisang
 # Author: Codenstory
 # Author: Ellif
 # Author: Gongsoonyee
@@ -520,7 +521,7 @@ ko:
     view_page: 코스 문서 보기
     view_wiki: 위키백과에서 보기
     volunteer:
-      other: 지원자
+      other: 자원봉사자
     wiki_edits_enabled: 위키 편집 사용
     wiki_staff: 위키 교육 직원
     withdrawn: 과제를 제출하지 않았습니다
@@ -664,6 +665,8 @@ ko:
     word_count: 단어 추가됨
     word_count_average: 평균 단어 개수
     general: 일반
+    merged: 로 병합됨
+    merged_from: 에서 병합됨
     removed: 제거됨
     labels: 레이블
     no_data: 데이터 없음

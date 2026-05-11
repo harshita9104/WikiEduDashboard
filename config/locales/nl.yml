@@ -1254,7 +1254,7 @@ nl:
     summary: Samenvatting
   error:
     invalid_assignment: Ongeldige opdracht
-    invalid_date: '%{key} datum is ongeldig'
+    invalid_date: '%{key} datum is onjuist'
     invalid_file_format: Het bestand kon niet worden opgeslagen. Upload een PDF- of
       Word-document.
     oauth_invalid: Uw Wikipedia-autorisatie is verlopen. Meld u opnieuw aan.
