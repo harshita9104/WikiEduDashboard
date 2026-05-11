@@ -18,8 +18,7 @@ class RevisionScoreImporter
     @api_handler = RevisionScoreApiHandler.new(wiki: @wiki, update_service:)
   end
 
-  # Takes an array of Revision records, and returns an array of Revisions records
-  # with scores completed.
+  # Takes an array of RevisionOnMemory records, and returns them with scores completed.
   def get_revision_scores(new_revisions)
     scores = {}
     parent_scores = {}
