@@ -288,6 +288,39 @@ describe CourseRevisionUpdater do
         response = scoped_instance_class.fetch_revisions_for_course_wiki(wiki, start_date, end_date)
         expect(response[wiki][:revisions]).to eq([])
       end
+
+      context 'when fetched revisions include non-scoped ones' do
+        let(:rev_date) { '2016-03-25'.to_datetime }
+        let(:scoped_revision) { RevisionOnMemory.new(scoped: true, system: false, date: rev_date) }
+        let(:non_scoped_revision) do
+          RevisionOnMemory.new(scoped: false, system: false, date: rev_date - 1.day)
+        end
+
+        before do
+          create(:course_wiki_timeslice, course: scoped_course, wiki:,
+                                         start: start_date, end: end_date.to_datetime + 1.day,
+                                         mw_rev_count: 1, last_mw_rev_datetime: rev_date)
+          allow(scoped_instance_class).to receive(:no_point_in_importing_revisions?)
+            .and_return(false)
+          allow(scoped_instance_class).to receive(:fetch_revisions)
+            .and_return([scoped_revision, non_scoped_revision])
+        end
+
+        it 'does not report new data when non-scoped revisions do not change the scoped count' do
+          response = scoped_instance_class.fetch_revisions_for_course_wiki(wiki, start_date,
+                                                                           end_date)
+          expect(response[wiki][:new_data]).to eq(false)
+        end
+
+        it 'reports new data when scoped revision count increases' do
+          extra_scoped = RevisionOnMemory.new(scoped: true, system: false, date: rev_date)
+          allow(scoped_instance_class).to receive(:fetch_revisions)
+            .and_return([scoped_revision, non_scoped_revision, extra_scoped])
+          response = scoped_instance_class.fetch_revisions_for_course_wiki(wiki, start_date,
+                                                                           end_date)
+          expect(response[wiki][:new_data]).to eq(true)
+        end
+      end
     end
   end
 end

@@ -91,12 +91,13 @@ class CourseRevisionUpdater
   # The count comparison is against `timeslice.mw_rev_count`, NOT
   # `timeslice.revision_count`. The two columns apply different filters:
   # `revision_count` excludes deleted revs and revs in `articles_courses.not_tracked`
-  # in addition to system revs, while this method (and `mw_rev_count`) excludes only
-  # system revs. Comparing against `revision_count` would falsely report new data
-  # every cycle for any timeslice that contains a deleted or not-tracked rev.
+  # in addition to system revs and non-scoped revisions, while this method (and `mw_rev_count`)
+  # excludes only system revs and non-scoped revisions. Comparing against `revision_count` would
+  # falsely report new data every cycle for any timeslice that contains a deleted or not-tracked
+  # rev. Note that we have to fetch scores to determine if a revision is deleted.
   # See CourseWikiTimeslice#update_mw_rev_count.
   def new_revisions?(revisions, wiki, timeslice_start)
-    live_revisions = revisions.reject(&:system)
+    live_revisions = revisions.reject { |rev| rev.system || !rev.scoped }
     revision_count = live_revisions.count
     timeslice = CourseWikiTimeslice.for_course_and_wiki(@course, wiki)
                                    .for_datetime(timeslice_start)
