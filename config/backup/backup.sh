@@ -97,11 +97,19 @@ log "Finishing"
 # Update running backup record to 'finished'
 mysql < $QUERY_ROUTE/finished.sql
 
-# Remove oldest backup if there are more than three
+# Remove oldest backup if there are more than MIN_BACKUPS_NUMBER real backups.
+# A real backup is a folder that contains a .sql.gz file; empty or failed
+# folders are excluded from the count so they never block deletion.
 MIN_BACKUPS_NUMBER=3
-CURRENT_BACKUPS_NUMBER=$(ls -1d "$BACKUP_ROUTE"/*/ | wc -l)
-if [ $CURRENT_BACKUPS_NUMBER -gt $MIN_BACKUPS_NUMBER ]; then
-  OLDEST_BACKUP=$(ls -1d "$BACKUP_ROUTE"/*/ | sort | head -1)
+REAL_BACKUPS=()
+while IFS= read -r dir; do
+  if find "$dir" -maxdepth 1 -name "*.sql.gz" | grep -q .; then
+    REAL_BACKUPS+=("$dir")
+  fi
+done < <(ls -1d "$BACKUP_ROUTE"/*/ | sort)
+
+if [ ${#REAL_BACKUPS[@]} -gt $MIN_BACKUPS_NUMBER ]; then
+  OLDEST_BACKUP="${REAL_BACKUPS[0]}"
   log "Removing $OLDEST_BACKUP"
-  rm -r $OLDEST_BACKUP
+  rm -r "$OLDEST_BACKUP"
 fi
