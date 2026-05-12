@@ -3,9 +3,8 @@
 require_dependency "#{Rails.root}/lib/reference_counter_api"
 
 #= Handles the logic to decide how to retrieve revision data for a given wiki.
-# This involves to determine if the given wiki is supported for both Lift Wing API and
-# reference-counter API (e.g en.wikipedia), only for Lift Wing API (wikidata),
-# or only for reference-counter API (e.g es.wikipedia).
+# Determines whether the wiki is supported by the reference-counter API
+# (e.g. en.wikipedia, es.wikipedia).
 class RevisionScoreApiHandler
   def initialize(language: 'en', project: 'wikipedia', wiki: nil, update_service: nil)
     @update_service = update_service
@@ -15,25 +14,18 @@ class RevisionScoreApiHandler
     @reference_counter_api = ReferenceCounterApi.new(@wiki, @update_service)
   end
 
-  # Returns data from LiftWing API and/or reference-counter API.
+  # Returns data from the reference-counter API.
   # The response has the following format:
   # { "rev_0"=>
-  #     { "wp10"=>0.296976285416441736e2,
-  #       "features"=> { "num_ref"=>0 },
+  #     { "features"=> { "num_ref"=>0 },
   #       "deleted"=>false,
-  #       "prediction"=>"Start",
-  #       "start" => false },
+  #       "error"=>false },
   #   ...,
   #   "rev_n"=>
-  #     { "wp10"=>0.2929458626376752846e2,
-  #       "features"=> {},
+  #     { "features"=> {},
   #       "deleted"=>false,
-  #       "prediction"=>"Start",
-  #       "start" => false }
+  #       "error"=>false }
   # }
-  #
-  # For wikidata, "features" key contains Liftwing features. For other wikis, "features"
-  # key contains reference-counter response (or empty hash).
   def get_revision_data(rev_batch)
     scores = maybe_get_reference_data(rev_batch)
     ensure_complete_scores scores
