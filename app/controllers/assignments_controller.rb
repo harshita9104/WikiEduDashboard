@@ -18,7 +18,7 @@ class AssignmentsController < ApplicationController
     @flags = @assignment.flags
     assignment_id = params[:assignment_id]
     user_id = params[:user_id]
-    if assignment_id &&  user_id.present? && @assignment.flags[:available_article]
+    if assignment_id && user_id.present? && @assignment.flags[:available_article]
       @assignment.update(user_id: nil)
       render partial: 'updated_assignment', locals: { assignment: @assignment }
     else
@@ -36,6 +36,8 @@ class AssignmentsController < ApplicationController
     set_new_assignment
     update_onwiki_course_and_assignments
     render partial: 'assignment', locals: { assignment: @assignment, course: @assignment.course }
+  rescue Wiki::InvalidWikiError
+    render json: { message: I18n.t('error.invalid_assignment') }, status: :unprocessable_entity
   rescue AssignmentManager::DiscouragedArticleError,
          AssignmentManager::MaxGroupSizeExceededError => e
     render json: { errors: e, message: e.message },

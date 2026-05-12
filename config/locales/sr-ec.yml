@@ -928,7 +928,7 @@ sr-ec:
     general: Опште
     total_revisions: Укупно измена
     aliases: Псеудоними
-    merged: Спојено
+    merged: Спојено са
     created: Направљено
     changed: Измењено
     removed: Уклоњено
@@ -1170,6 +1170,7 @@ sr-ec:
       места за нове.
     view_full_timeline: Погледај потпуну временску линију
     week_number: Недеља %{number}
+    add_block: Додај блок
   training:
     continue: Настави (%{progress})
     start: Започни
@@ -1554,4 +1555,8 @@ sr-ec:
     delete_note: Обриши белешку
   tagged_courses:
     download_csv: Преузми као CSV
+  form_search:
+    search: Претрага
+    advanced_search: Напредна претрага
+    clear: Очисти
 ...
