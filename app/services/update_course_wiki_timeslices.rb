@@ -112,7 +112,7 @@ class UpdateCourseWikiTimeslices
     else
       log_processing(wiki, start_date, end_date, only_new)
       add_scores(only_new:)
-      maybe_fetch_wikidata_stats(wiki)
+      maybe_fetch_wikidata_stats(wiki, only_new:)
       process_timeslices(wiki) if !only_new | new_data?(wiki)
       [start_date]
     end
@@ -143,8 +143,8 @@ class UpdateCourseWikiTimeslices
     [timeslice_end - 1.second, @course.end].min
   end
 
-  def maybe_fetch_wikidata_stats(wiki)
-    fetch_wikidata_stats(wiki) if wiki.project == 'wikidata' && new_data?(wiki)
+  def maybe_fetch_wikidata_stats(wiki, only_new:)
+    fetch_wikidata_stats(wiki) if wiki.project == 'wikidata' && (!only_new || new_data?(wiki))
   end
 
   def new_data?(wiki)
