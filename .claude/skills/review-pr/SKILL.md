@@ -533,6 +533,11 @@ manual testing).
 All review comments and PR feedback posted via this skill must follow
 these rules:
 
+**How to use feedback:** At the start of a review, include a note about
+how we intend AI-driven review feedback to be used — not to be automatically
+trusted or blindly acted upon, but good to read, understand and use or
+ignore based on the developer's own judgment.
+
 **Approval required:** Never post a review or comment without first
 showing the full draft to the reviewer and receiving explicit approval.
 Always wait for confirmation before running `gh pr review` or
