@@ -50,7 +50,7 @@ class CourseUserWikiTimeslice < ApplicationRecord
                        .for_revisions_between(rev_start, rev_end)
     timeslices.each do |timeslice|
       # Group revisions that belong to the timeslice
-      revisions_in_timeslice = revisions[:revisions].select(&:scoped).select do |revision|
+      revisions_in_timeslice = revisions[:revisions].select do |revision|
         timeslice.start <= revision.date && revision.date < timeslice.end
       end
       # Get or create article course timeslice based on course, article_id,
@@ -71,7 +71,8 @@ class CourseUserWikiTimeslice < ApplicationRecord
 
   # Assumes that the revisions are for their own course user wiki
   def update_cache_from_revisions(revisions)
-    @revisions = revisions
+    # Only work with scoped revisions
+    @revisions = revisions.select(&:scoped)
     @liverevisions = live_revisions
     tracked_namespace_revisions = live_revisions_in_tracked_namespaces
     update_character_sum(@liverevisions, tracked_namespace_revisions)

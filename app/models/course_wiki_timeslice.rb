@@ -53,7 +53,7 @@ class CourseWikiTimeslice < ApplicationRecord
                                                 .for_revisions_between(rev_start, rev_end)
     course_wiki_timeslices.each do |timeslice|
       # Group revisions that belong to the timeslice
-      revisions_in_timeslice = revisions[:revisions].select(&:scoped).select do |revision|
+      revisions_in_timeslice = revisions[:revisions].select do |revision|
         timeslice.start <= revision.date && revision.date < timeslice.end
       end
       # Update cache for CourseWikiTimeslice
@@ -67,7 +67,8 @@ class CourseWikiTimeslice < ApplicationRecord
 
   # Assumes that the revisions are for their own course wiki
   def update_cache_from_revisions(revisions)
-    @revisions = revisions
+    # Only work with scoped revisions
+    @revisions = revisions.select(&:scoped)
     @students = course.courses_users.where(role: CoursesUsers::Roles::STUDENT_ROLE)
 
     update_character_sum
@@ -116,9 +117,9 @@ class CourseWikiTimeslice < ApplicationRecord
     self.revision_count = tracked_revisions.count { |rev| !rev.deleted && !rev.system }
   end
 
-  # Count of revisions as fetched from MediaWiki, excluding only system edits.
   # Must mirror the same filter that CourseRevisionUpdater#new_revisions? applies
   # to the live fetched revisions, so the two counts are comparable.
+  # Exclude non-scoped (pre-filtered in @revisions) and system edits.
   def update_mw_rev_count
     self.mw_rev_count = @revisions.count { |rev| !rev.system }
   end
