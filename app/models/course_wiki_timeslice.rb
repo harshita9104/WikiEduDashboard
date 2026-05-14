@@ -117,9 +117,9 @@ class CourseWikiTimeslice < ApplicationRecord
     self.revision_count = tracked_revisions.count { |rev| !rev.deleted && !rev.system }
   end
 
-  # Count of revisions as fetched from MediaWiki, excluding only system edits.
   # Must mirror the same filter that CourseRevisionUpdater#new_revisions? applies
   # to the live fetched revisions, so the two counts are comparable.
+  # Exclude non-scoped (pre-filtered in @revisions) and system edits.
   def update_mw_rev_count
     self.mw_rev_count = @revisions.count { |rev| !rev.system }
   end
