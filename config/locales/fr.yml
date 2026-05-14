@@ -4,6 +4,7 @@
 # Author: Ajeje Brazorf
 # Author: Alacabe
 # Author: Appleuseryu
+# Author: Aquasen
 # Author: Ash Crow
 # Author: Bananax47
 # Author: Benoit Rochon
@@ -1408,7 +1409,7 @@ fr:
     total_revisions: Total des versions
     claims: Déclarations
     aliases: Alias
-    merged: Fusionné
+    merged: Fusionné à
     created: Créé
     changed: Changé
     removed: Retiré

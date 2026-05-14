@@ -592,7 +592,12 @@ nl:
     name: Naam
     category_name: Categorienaam
     psid_name: PSID
+    psid_description: PetScan-zoekopdrachten werken alleen met het dashboard één wiki
+      tegelijk. Zorg ervoor dat uw PetScan-zoekopdracht alleen pagina's uit één wiki
+      bevat en dat deze overeenkomt met de onderstaande wikiset.
     pileid_name: PagePile-ID
+    pileid_description: Zorg ervoor dat de wiki van de PagePile een van de gevolgde
+      wikis voor dit programma is.
     template_name: Sjabloonnaam
     none: Er worden geen categorieën bijgehouden.
     remove: Verwijderen
@@ -955,6 +960,7 @@ nl:
     word_count: Aantal woorden toegevoegd
     aliases: Aliassen
     merged: Samengevoegd naar
+    merged_from: Samengevoegd uit
     created: Aangemaakt
     changed: Gewijzigd
     removed: Verwijderd
