@@ -616,11 +616,9 @@ if ENV['SCREENSHOTS']
       # short-circuits when every counter is zero (overview_stats_tabs.jsx:37),
       # so an all-zero example wouldn't actually render the component.
 
-      # Every key the WikidataOverviewStats component reads, plus `'unknown'`
-      # which `format_course_stats` (in CourseHelper) folds into
-      # `'other updates'` and then strips. Without `'unknown'` in the hash,
-      # the campaign-JSON render 500s with "nil can't be coerced into Integer"
-      # because `'other updates' => 0` is truthy in Ruby.
+      # Every key the WikidataOverviewStats component reads from `statistics`,
+      # so we can build a sparse hash that includes the zeros the UI expects
+      # (`renderZero={true}`) rather than letting any cell see undefined.
       WIKIDATA_STAT_KEYS = [
         'total revisions',
         'merged to', 'merged from', 'interwiki links added',
@@ -631,7 +629,7 @@ if ENV['SCREENSHOTS']
         'aliases added', 'aliases changed', 'aliases removed',
         'qualifiers added', 'references added', 'redirects created',
         'reverts performed', 'restorations performed', 'other updates',
-        'lexeme items created', 'unknown'
+        'lexeme items created'
       ].freeze
 
       let(:admin) { create(:super_admin) }
@@ -659,7 +657,7 @@ if ENV['SCREENSHOTS']
           'qualifiers added' => 2_071, 'references added' => 3_402,
           'redirects created' => 18,
           'reverts performed' => 41, 'restorations performed' => 6, 'other updates' => 73,
-          'lexeme items created' => 22, 'unknown' => 0
+          'lexeme items created' => 22
         }
       end
 
