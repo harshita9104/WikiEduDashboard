@@ -603,6 +603,115 @@ if ENV['SCREENSHOTS']
       end
     end
 
+    context 'wikidata stats display' do
+      # Captures WikidataOverviewStats in both the campaign-overview embed and
+      # the course-overview tab, in two flavors:
+      #   * sparse — most counters are zero, only a handful of small non-zero
+      #     values (mirrors a real campaign where a few students made a few
+      #     edits on Wikidata)
+      #   * rich — every section populated, sized like a multi-instructor
+      #     Wikidata campaign that ran the full term
+      #
+      # All-zero stats are intentionally NOT covered: the course-overview tab
+      # short-circuits when every counter is zero (overview_stats_tabs.jsx:37),
+      # so an all-zero example wouldn't actually render the component.
+
+      # Every key the WikidataOverviewStats component reads, plus `'unknown'`
+      # which `format_course_stats` (in CourseHelper) folds into
+      # `'other updates'` and then strips. Without `'unknown'` in the hash,
+      # the campaign-JSON render 500s with "nil can't be coerced into Integer"
+      # because `'other updates' => 0` is truthy in Ruby.
+      WIKIDATA_STAT_KEYS = [
+        'total revisions',
+        'merged to', 'merged from', 'interwiki links added',
+        'items created', 'items cleared',
+        'claims created', 'claims changed', 'claims removed',
+        'labels added', 'labels changed', 'labels removed',
+        'descriptions added', 'descriptions changed', 'descriptions removed',
+        'aliases added', 'aliases changed', 'aliases removed',
+        'qualifiers added', 'references added', 'redirects created',
+        'reverts performed', 'restorations performed', 'other updates',
+        'lexeme items created', 'unknown'
+      ].freeze
+
+      let(:admin) { create(:super_admin) }
+      let(:wikidata) { Wiki.get_or_create(language: nil, project: 'wikidata') }
+
+      let(:sparse_stats) do
+        WIKIDATA_STAT_KEYS.to_h { |k| [k, 0] }
+                          .merge('total revisions' => 11,
+                                 'claims created' => 3,
+                                 'labels added' => 4,
+                                 'descriptions added' => 2)
+      end
+
+      let(:rich_stats) do
+        {
+          'total revisions' => 8_423,
+          'merged to' => 12, 'merged from' => 12,
+          'interwiki links added' => 219,
+          'items created' => 437, 'items cleared' => 3,
+          'claims created' => 5_812, 'claims changed' => 1_204, 'claims removed' => 86,
+          'labels added' => 1_944, 'labels changed' => 220, 'labels removed' => 7,
+          'descriptions added' => 1_310, 'descriptions changed' => 142,
+          'descriptions removed' => 5,
+          'aliases added' => 488, 'aliases changed' => 21, 'aliases removed' => 2,
+          'qualifiers added' => 2_071, 'references added' => 3_402,
+          'redirects created' => 18,
+          'reverts performed' => 41, 'restorations performed' => 6, 'other updates' => 73,
+          'lexeme items created' => 22, 'unknown' => 0
+        }
+      end
+
+      it 'campaign and course overview, sparse and rich' do
+        login_as(admin, scope: :user)
+
+        variants = [
+          { label: 'sparse', stats: sparse_stats,
+            campaign_title: 'Wikidata Editing Demo (sparse)',
+            campaign_slug: 'wikidata_demo_sparse',
+            course_title: 'Wikidata Workshop — Light Activity',
+            course_slug: 'Demo_University/Wikidata_Workshop_Light_(Spring_2025)',
+            user_count: 4, recent_revision_count: 11 },
+          { label: 'rich', stats: rich_stats,
+            campaign_title: 'Wikidata Editing Demo (rich)',
+            campaign_slug: 'wikidata_demo_rich',
+            course_title: 'Wikidata Workshop — High Activity',
+            course_slug: 'Demo_University/Wikidata_Workshop_Heavy_(Spring_2025)',
+            user_count: 24, recent_revision_count: 642 }
+        ]
+
+        variants.each do |v|
+          course = create(:course,
+                          title: v[:course_title],
+                          school: 'Demo University',
+                          term: 'Spring 2025',
+                          slug: v[:course_slug],
+                          home_wiki_id: wikidata.id,
+                          user_count: v[:user_count],
+                          recent_revision_count: v[:recent_revision_count])
+          CourseStat.create!(course:,
+                             stats_hash: { 'www.wikidata.org' => v[:stats] })
+          campaign = create(:campaign,
+                            title: v[:campaign_title],
+                            slug: v[:campaign_slug],
+                            description: 'A demo campaign focused on Wikidata edits.')
+          create(:campaigns_course, campaign:, course:)
+
+          visit "/campaigns/#{campaign.slug}/overview"
+          # Wait for the React-rendered CampaignStats widget before
+          # snapshotting; otherwise the screenshot races the redux fetch of
+          # /campaigns/:slug.json and the navbar shows an empty title.
+          shoot("campaign_overview_wikidata_#{v[:label]}",
+                wait: 1.0, wait_for: '#courses-count')
+
+          visit "/courses/#{course.slug}/home"
+          shoot("course_overview_wikidata_#{v[:label]}",
+                wait: 1.5, wait_for: '.wikidata-stats-container')
+        end
+      end
+    end
+
     context 'survey respondent walkthrough' do
       # Builds a survey with one of each major Rapidfire question type, then
       # walks the respondent through it, screenshotting each question as it's

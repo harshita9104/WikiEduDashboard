@@ -91,6 +91,13 @@ routed by React Router inside `course/course.jsx`:
   `CoursesController#show` → `courses/show.html.haml` → React: `Course`
   - `/` and `/home` and `/overview` — `OverviewHandler`
     <br><a href="screenshots/course_overview.png"><img src="screenshots/course_overview.png" width="320" alt="course overview"></a>
+    <br>When the course's home wiki is `www.wikidata.org`, the wiki-specific
+    stats tab below the main stats strip is `WikidataOverviewStats` instead
+    of `NamespaceOverviewStats`. Tab is hidden if every counter is zero
+    (see `overview_stats_tabs.jsx:37`), so the sparse example below still
+    has a handful of non-zero counters.
+    <br><a href="screenshots/course_overview_wikidata_sparse.png"><img src="screenshots/course_overview_wikidata_sparse.png" width="320" alt="course overview, wikidata stats (sparse)"></a>
+    <a href="screenshots/course_overview_wikidata_rich.png"><img src="screenshots/course_overview_wikidata_rich.png" width="320" alt="course overview, wikidata stats (rich)"></a>
   - `/activity/*` — `ActivityHandler`
     <br><a href="screenshots/course_activity.png"><img src="screenshots/course_activity.png" width="320" alt="course activity"></a>
   - `/students/*` — `StudentsTabHandler`
@@ -192,8 +199,13 @@ campaign. The tabs are partly React-routed and partly server-rendered:
 - `GET /campaigns/:slug` — redirects to `/programs`
 - `GET /campaigns/:slug/overview` — `CampaignsController#overview` →
   `campaigns/overview.html.haml` — React widgets (`CampaignStats`,
-  `WikidataOverviewStats`) embedded in a HAML page
-  <br><a href="screenshots/campaign_overview.png"><img src="screenshots/campaign_overview.png" width="320" alt="campaign overview"></a>
+  `WikidataOverviewStats`) embedded in a HAML page. `WikidataOverviewStats`
+  renders whenever any course in the campaign has a `CourseStat` row
+  containing `stats_hash['www.wikidata.org']` (it's the *combined* stats
+  across the campaign's courses — see `CoursesPresenter#wikidata_stats`).
+  <br><a href="screenshots/campaign_overview.png"><img src="screenshots/campaign_overview.png" width="320" alt="campaign overview (no wikidata activity)"></a>
+  <a href="screenshots/campaign_overview_wikidata_sparse.png"><img src="screenshots/campaign_overview_wikidata_sparse.png" width="320" alt="campaign overview, wikidata stats (sparse)"></a>
+  <a href="screenshots/campaign_overview_wikidata_rich.png"><img src="screenshots/campaign_overview_wikidata_rich.png" width="320" alt="campaign overview, wikidata stats (rich)"></a>
 - `GET /campaigns/:slug/programs` — `CampaignsController#programs` →
   `campaigns/programs.html.haml` — React widgets embedded; main content is
   the list of courses in the campaign
