@@ -619,6 +619,10 @@ if ENV['SCREENSHOTS']
       # Every key the WikidataOverviewStats component reads from `statistics`,
       # so we can build a sparse hash that includes the zeros the UI expects
       # (`renderZero={true}`) rather than letting any cell see undefined.
+      # `'unknown'` is here for cross-branch portability: bin/inventory-diff
+      # copies this spec into branches that may pre-date the
+      # format_course_stats fix, where a missing `'unknown'` key plus a
+      # zero `'other updates'` crashed the campaign JSON endpoint.
       WIKIDATA_STAT_KEYS = [
         'total revisions',
         'merged to', 'merged from', 'interwiki links added',
@@ -629,7 +633,7 @@ if ENV['SCREENSHOTS']
         'aliases added', 'aliases changed', 'aliases removed',
         'qualifiers added', 'references added', 'redirects created',
         'reverts performed', 'restorations performed', 'other updates',
-        'lexeme items created'
+        'lexeme items created', 'unknown'
       ].freeze
 
       let(:admin) { create(:super_admin) }
@@ -657,7 +661,7 @@ if ENV['SCREENSHOTS']
           'qualifiers added' => 2_071, 'references added' => 3_402,
           'redirects created' => 18,
           'reverts performed' => 41, 'restorations performed' => 6, 'other updates' => 73,
-          'lexeme items created' => 22
+          'lexeme items created' => 22, 'unknown' => 0
         }
       end
 
